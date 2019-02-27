@@ -1,0 +1,295 @@
+<!doctype html>
+<html>
+        <head>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+                <title>Intro to Reverse Engineering</title>
+
+                <link rel="stylesheet" href="css/reveal.css">
+                <link rel="stylesheet" href="css/theme/black.css">
+
+                <!-- styling for asciinema -->
+                <link rel="stylesheet" type="text/css" href="css/asciinema-player.css" />
+
+                <!-- Theme used for syntax highlighting of code -->
+                <link rel="stylesheet" href="lib/css/zenburn.css">
+
+                <!-- Printing and PDF exports -->
+                <script>
+                        var link = document.createElement( 'link' );
+                        link.rel = 'stylesheet';
+                        link.type = 'text/css';
+                        link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+                        document.getElementsByTagName( 'head' )[0].appendChild( link );
+                </script>
+        </head>
+        <body>
+                <div class="reveal">
+                  <div class="slides">
+                    <section>
+                      <h1>Reverse Engineering</h1>
+                      <h3>How to read programs without the source code</h3>
+                      <p><small>Created by Joshua Nelson with <a href="https://github.com/hakimel/reveal.js/">reveal.js</a></small>
+                    </section>
+                    <section>
+                      <h2>What is Reverse Engineering?</h2>
+                      <p>Taking a binary executable and figuring out what it does</p>
+                    </section>
+                    <section>
+                      <h1>Why RE?</h1>
+                      <p><sub>(ordered from most to least legal)</sub></p>
+                      <ol>
+                        <li>Figure out what a virus is doing</li>
+                        <li>Debug compiler output</li>
+                        <li>Mod a game not designed to be modded
+                          (e.g. <a href="https://github.com/Col-E/Recaf">Minecraft</a>)</li>
+                        <li>Exploit a program</li>
+                        <li>Steal information from a competitor</li>
+                      </ol>
+                    </section>
+                    <section>
+                      <section>
+                        <h1>Examples</h1>
+                        <h3>If you have source code</h3>
+                        <asciinema-player src="examples/printf-src/how-to.cast"></asciinema-player>
+                      </section>
+                      <section>
+                        <h3>If you're looking at strings</h3>
+                        <asciinema-player src="examples/printf/how-to.cast"></asciinema-player>
+                      </section>
+                      <section>
+                        <h2>What if it's not that simple?</h2>
+                        <asciinema-player src="examples/if/help.cast"></asciinema-player>
+                      </section>
+                    </section>
+                    <section>
+                      <section>
+                        <h2>Assembly to the rescue!</h2>
+                        <p>Before there was C or Algol, there was assembly</p>
+                        <p>Remember 212?</p>
+                        <img src="https://i.stack.imgur.com/4I3jv.png">
+                      </section>
+                      <section>
+                        <h3>Registers</h3>
+                        <img src="http://condor.depaul.edu/slytinen/373w16/ch3/registers.png">
+                      </section>
+                      <section>
+                        <h3>Memory Model</h3>
+                        <img src="https://i.stack.imgur.com/HOY4C.png">
+                      </section>
+                      <section>
+                        <h3>Common x86 Instructions</h3>
+                        <ul>
+                          <li><code>mov/movq</code></li>
+                          <li><code>cmp</code> and <code>je</code></li>
+                          <li><code>xor</code></li>
+                          <li><code>call</code> and <code>ret</code></li>
+                          <li><code>push</code> and <code>pop</code></li>
+                          <li><code>lea</code></li>
+                          <li><code>nop</code></li>
+                        </ul>
+                      </section>
+                      <section>
+                        <h3>Example</h3>
+<pre><code># printf.c:15:   size_t len = 0;
+        movq    $0, -16(%rbp)   #, len
+# printf.c:16:   fputs("Enter the password: ", stdout);
+        movq    stdout(%rip), %rax      # stdout, stdout.0_1
+        movq    %rax, %rcx      # stdout.0_1,
+        movl    $20, %edx       #,
+        movl    $1, %esi        #,
+        leaq    .LC1(%rip), %rdi        #,
+        call    fwrite@PLT      #
+# printf.c:17:   getline(&line, &len, stdin);
+        movq    stdin(%rip), %rdx       # stdin, stdin.1_2
+        leaq    -16(%rbp), %rcx #, tmp93
+        leaq    -24(%rbp), %rax #, tmp94
+        movq    %rcx, %rsi      # tmp93,
+        movq    %rax, %rdi      # tmp94,
+        call    getline@PLT     #
+# printf.c:18:   if (strcmp(line, "Magic super secret constant\n")) {
+        movq    -24(%rbp), %rax # line, line.2_3
+        leaq    .LC2(%rip), %rsi        #,
+        movq    %rax, %rdi      # line.2_3,
+        call    strcmp@PLT      #
+        testl   %eax, %eax      # _4
+        je      .L3     #,
+# printf.c:19:     error();
+        call    error   #
+.L3:
+# printf.c:21:   puts("You won!");
+        leaq    .LC3(%rip), %rdi        #,
+        call    puts@PLT        #
+        movl    $0, %eax        #, _14
+</code></pre>
+                      </section>
+                    </section>
+                    <section>
+                      <section>
+                        <h3>Let's figure this one out</h3>
+  <pre><code>0000000000000894 &lt;main>:
+   894:   55                      push   %rbp
+   895:   48 89 e5                mov    %rsp,%rbp
+   898:   48 83 ec 20             sub    $0x20,%rsp
+   89c:   64 48 8b 04 25 28 00    mov    %fs:0x28,%rax
+   8a3:   00 00
+   8a5:   48 89 45 f8             mov    %rax,-0x8(%rbp)
+   8a9:   31 c0                   xor    %eax,%eax
+   8ab:   48 c7 45 f0 00 00 00    movq   $0x0,-0x10(%rbp)
+   8b2:   00
+   8b3:   48 8b 05 56 07 20 00    mov    0x200756(%rip),%rax        # 201010 &lt;stdout@@GLIBC_2.2.5>
+   8ba:   48 89 c1                mov    %rax,%rcx
+   8bd:   ba 14 00 00 00          mov    $0x14,%edx
+   8c2:   be 01 00 00 00          mov    $0x1,%esi
+   8c7:   48 8d 3d fd 00 00 00    lea    0xfd(%rip),%rdi        # 9cb &lt;_IO_stdin_used+0x1b>
+   8ce:   e8 7d fe ff ff          callq  750 &lt;fwrite@plt>
+   8d3:   48 8b 15 46 07 20 00    mov    0x200746(%rip),%rdx        # 201020 &lt;stdin@@GLIBC_2.2.5>
+   8da:   48 8d 4d f0             lea    -0x10(%rbp),%rcx
+   8de:   48 8d 45 e8             lea    -0x18(%rbp),%rax
+   8e2:   48 89 ce                mov    %rcx,%rsi
+   8e5:   48 89 c7                mov    %rax,%rdi
+   8e8:   e8 43 fe ff ff          callq  730 &lt;getline@plt>
+   8ed:   48 8b 45 e8             mov    -0x18(%rbp),%rax
+   8f1:   48 8d 35 e8 00 00 00    lea    0xe8(%rip),%rsi        # 9e0 &lt;_IO_stdin_used+0x30>
+   8f8:   48 89 c7                mov    %rax,%rdi
+   8fb:   e8 20 fe ff ff          callq  720 &lt;strcmp@plt>
+   900:   85 c0                   test   %eax,%eax
+   902:   74 05                   je     909 &lt;main+0x75>
+   904:   e8 71 ff ff ff          callq  87a &lt;error>
+   909:   48 8d 3d e9 00 00 00    lea    0xe9(%rip),%rdi        # 9f9 &lt;_IO_stdin_used+0x49>
+   910:   e8 eb fd ff ff          callq  700 &lt;puts@plt>
+   915:   b8 00 00 00 00          mov    $0x0,%eax
+   91a:   48 8b 4d f8             mov    -0x8(%rbp),%rcx
+   91e:   64 48 33 0c 25 28 00    xor    %fs:0x28,%rcx
+   925:   00 00
+   927:   74 05                   je     92e &lt;main+0x9a>
+   929:   e8 e2 fd ff ff          callq  710 &lt;__stack_chk_fail@plt>
+   92e:   c9                      leaveq
+   92f:   c3                      retq
+  </code></pre>
+                      </section>
+                      <section>
+                        <h3>Can we make this easier?</h3>
+                        <asciinema-player src="examples/printf/gdb.cast"></asciinema-player>
+                      </section>
+                    </section>
+                    <section>
+                      <section>
+                        <h2>Common C control flow</h2>
+                        <ol>
+                          <li><code>if/then/else</code></li>
+                          <li><code>while</code></li>
+                          <li><code>for</code></li>
+                          <li><code>switch</code></li>
+                          <li><code>recursion</code></li>
+                        </ol>
+                      </section>
+                      <section>
+                        <h3>If</h3>
+                        <p>Hint: look for <code>cmp</code></p>
+<pre><code>0000000000000864 &lt;main>:
+ 864:   55                      push   %rbp
+ 865:   48 89 e5                mov    %rsp,%rbp
+ 868:   48 83 ec 20             sub    $0x20,%rsp
+ 86c:   64 48 8b 04 25 28 00    mov    %fs:0x28,%rax
+ 873:   00 00
+ 875:   48 89 45 f8             mov    %rax,-0x8(%rbp)
+ 879:   31 c0                   xor    %eax,%eax
+ 87b:   48 c7 45 f0 00 00 00    movq   $0x0,-0x10(%rbp)
+ 882:   00
+ 883:   48 8b 05 86 07 20 00    mov    0x200786(%rip),%rax        # 201010 &lt;stdout@@GLIBC_2.2.5>
+ 88a:   48 89 c1                mov    %rax,%rcx
+ 88d:   ba 12 00 00 00          mov    $0x12,%edx
+ 892:   be 01 00 00 00          mov    $0x1,%esi
+ 897:   48 8d 3d fd 00 00 00    lea    0xfd(%rip),%rdi        # 99b &lt;_IO_stdin_used+0x1b>
+ 89e:   e8 7d fe ff ff          callq  720 &lt;fwrite@plt>
+ 8a3:   48 8b 05 76 07 20 00    mov    0x200776(%rip),%rax        # 201020 &lt;stdin@@GLIBC_2.2.5>
+ 8aa:   48 8d 55 ec             lea    -0x14(%rbp),%rdx
+ 8ae:   48 8d 35 f9 00 00 00    lea    0xf9(%rip),%rsi        # 9ae &lt;_IO_stdin_used+0x2e>
+ 8b5:   48 89 c7                mov    %rax,%rdi
+ 8b8:   b8 00 00 00 00          mov    $0x0,%eax
+ 8bd:   e8 1e fe ff ff          callq  6e0 &lt;__isoc99_fscanf@plt>
+ 8c2:   8b 45 ec                mov    -0x14(%rbp),%eax
+ 8c5:   3d 8f a8 00 00          cmp    $0xa88f,%eax
+ 8ca:   74 05                   je     8d1 &lt;main+0x6d>
+ 8cc:   e8 79 ff ff ff          callq  84a &lt;error>
+ 8d1:   48 8d 3d d9 00 00 00    lea    0xd9(%rip),%rdi        # 9b1 &lt;_IO_stdin_used+0x31>
+ 8d8:   e8 13 fe ff ff          callq  6f0 &lt;puts@plt>
+ 8dd:   b8 00 00 00 00          mov    $0x0,%eax
+ 8e2:   48 8b 4d f8             mov    -0x8(%rbp),%rcx
+ 8e6:   64 48 33 0c 25 28 00    xor    %fs:0x28,%rcx
+ 8ed:   00 00
+ 8ef:   74 05                   je     8f6 &lt;main+0x92>
+ 8f1:   e8 0a fe ff ff          callq  700 &lt;__stack_chk_fail@plt>
+ 8f6:   c9                      leaveq
+ 8f7:   c3                      retq
+ 8f8:   0f 1f 84 00 00 00 00    nopl   0x0(%rax,%rax,1)
+ 8ff:   00</code></pre>
+                      </section>
+                      <section>
+                        <h3>The answer:</h3>
+                        <asciinema-player src="examples/if/how-to.cast"></asciinema-player>
+                      </section>
+                      <section>
+                        <h3><code>while</code></h3>
+<pre><code>   0x000000000000083b <+23>:    movl   $0x4,-0xc(%rbp)
+                        ...
+   0x0000000000000862 &lt;+62>:    lea    -0x10(%rbp),%rax
+   0x0000000000000866 &lt;+66>:    mov    %rax,%rsi
+   0x0000000000000869 &lt;+69>:    lea    0x110(%rip),%rdi        # 0x980
+   0x0000000000000870 &lt;+76>:    mov    $0x0,%eax
+   0x0000000000000875 &lt;+81>:    callq  0x6c0 &lt;__isoc99_scanf@plt>
+   0x000000000000087a &lt;+86>:    jmp    0x889 &lt;main+101>   # check condition immmediately
+   0x000000000000087c &lt;+88>:    mov    -0x10(%rbp),%eax   # loop body
+   0x000000000000087f &lt;+91>:    add    $0x5,%eax
+   0x0000000000000882 &lt;+94>:    mov    %eax,-0x10(%rbp)
+   0x0000000000000885 &lt;+97>:    subl   $0x1,-0xc(%rbp)    # where have we seen this?
+   0x0000000000000889 &lt;+101>:   mov    -0x10(%rbp),%eax   # jump target
+   0x000000000000088c &lt;+104>:   cmp    $0x31,%eax         # while comparison
+   0x000000000000088f &lt;+107>:   jle    0x87c &lt;main+88>    # goes backwards to loop
+   0x0000000000000891 &lt;+109>:   mov    -0x10(%rbp),%eax
+   0x0000000000000894 &lt;+112>:   cmp    $0x34,%eax
+   0x0000000000000897 &lt;+115>:   jne    0x89f &lt;main+123>
+   0x0000000000000899 &lt;+117>:   cmpl   $0x0,-0xc(%rbp)    # two comparisons!
+   0x000000000000089d &lt;+121>:   je     0x8a4 &lt;main+128>
+   0x000000000000089f &lt;+123>:   callq  0x80a &lt;error>
+   0x00000000000008a4 &lt;+128>:   lea    0xd8(%rip),%rdi        # 0x983
+   0x00000000000008ab &lt;+135>:   callq  0x6a0 &lt;puts@plt></code></pre>
+                      </section>
+                      <section>
+                        <h3>Answer</h3>
+                        <asciinema-player src="examples/while/how-to.cast"></asciinema-player>
+                    </section>
+                  </div>
+                </div>
+
+                <script src="lib/js/head.min.js"></script>
+                <script src="js/reveal.js"></script>
+                <script src="js/asciinema-player.js"></script>
+
+                <script>
+                        // More info about config & dependencies:
+                        // - https://github.com/hakimel/reveal.js#configuration
+                        // - https://github.com/hakimel/reveal.js#dependencies
+                        Reveal.initialize({
+                                dependencies: [
+                                        { src: 'plugin/zoom-js/zoom.js', async: true },
+                                        { src: 'plugin/markdown/marked.js' },
+                                        { src: 'plugin/markdown/markdown.js' },
+                                        { src: 'plugin/notes/notes.js', async: true },
+                                        { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+                                ],
+                                margin: .05,
+                                history: true
+                        });
+                </script>
+                <style>
+                /* fix overflow going off the page */
+                .scrollable {
+                    overflow-y: auto  !important;
+                    overflow-x: hidden !important;                    height: 675px;
+                }
+                </style>
+        </body>
+</html>
