@@ -11,9 +11,9 @@ Figure it out yourself!
 
 ## ORDER
 1. printf-src
-2. printf-dbg
-3. printf
-4. if
+2. printf
+3. if
+4. while
 5. argv
 6. math
 7. switch
