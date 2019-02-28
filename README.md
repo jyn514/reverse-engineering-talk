@@ -19,3 +19,10 @@ Figure it out yourself!
 7. switch
 8. recurse
 9. arrays
+
+## Bombs
+Binaries for you to try yourself.
+Used with permission of Dr. Matthews (https://cse.sc.edu/~matthews/).
+Originally from http://csapp.cs.cmu.edu/3e/labs.html.
+
+Hint: more than half of the phases were covered in the talk.
