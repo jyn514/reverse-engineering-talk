@@ -72,7 +72,11 @@
                       </section>
                       <section>
                         <h3>Registers</h3>
-                        <img src="http://condor.depaul.edu/slytinen/373w16/ch3/registers.png">
+                        <img src="http://slideplayer.com/slide/4394450/14/images/13/Registers+Register+Description+EIP+%E2%80%93+Instruction+Pointer+*.jpg">
+                      </section>
+                      <section>
+                        <h3>ABI</h3>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Linux_kernel_interfaces.svg/1200px-Linux_kernel_interfaces.svg.png">
                       </section>
                       <section>
                         <h3>Memory Model</h3>
@@ -84,10 +88,20 @@
                           <li><code>mov/movq</code></li>
                           <li><code>cmp</code> and <code>je</code></li>
                           <li><code>xor</code></li>
-                          <li><code>call</code> and <code>ret</code></li>
                           <li><code>push</code> and <code>pop</code></li>
+                          <li><code>call</code> and <code>ret</code></li>
                           <li><code>lea</code></li>
                           <li><code>nop</code></li>
+                        </ul>
+                      </section>
+                      <section>
+                        <h3>Addressing modes</h3>
+                        <ul>
+                          <li>Immediate: <code>mov $10, %eax</code><br> (assigning a constant to a variable)</li>
+                          <li>Direct: <code>mov %esi, %eax</code><br /> (assigning a variable to a variable)</li>
+                          <li>Indirect: <code>mov (%esi), %eax</code><br /> (dereferencing a pointer)</li>
+                          <li>Offset: <code>mov 0x2000(%eax), %eax</code> <br />(accessing an array, no pointer math)</li>
+                          <li>Scaled offset: <code>mov 0x3113(,%eax,4), %ebx</code><br /> (array indexing, pointer math)</li>
                         </ul>
                       </section>
                       <section>
