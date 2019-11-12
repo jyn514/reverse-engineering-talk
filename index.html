@@ -33,15 +33,22 @@
                       <p><small>Created by Joshua Nelson with <a href="https://github.com/hakimel/reveal.js/">reveal.js</a></small>
                     </section>
                     <section>
+                      <h1>Bookkeeping</h1>
+                      <p>This talk:
+                      <a href="https://github.com/jyn514/reverse-engineering-talk/archive/master.zip">https://github.com/jyn514/reverse-engineering-talk/</a></p>
+                      <p>Cyber security groupme:</p>
+                      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADIEAAAAADYoy0BAAAETUlEQVR4nOydUY5bMQgAkyr3v3L6m0bFggXezpNm/rrN2t6MLCGM8ev9fgiI1+PxfM4PG2nOzPX5u9HnM5/JkFln52+pr+fP/KDSQSEwFAJDITAUAuP17z87QfBGtNOZKzNmNYqLxpz73twhMBQCQyEwFAJDITBe8X9tRzJVqvmrTAS1Qe97c4fAUAgMhcBQCAyFwDhEWRtUT9+qkVVm/Exu6vdwh8BQCAyFwFAIDIXAuDjK6kRKmVO8Tv4qGvPaSMwdAkMhMBQCQyEwFALjEGVtRBcbY1Yjq+oJZjX31fsb3SEwFAJDITAUAkMhML6irI17cxGZfNTGzz+Zuqs49725Q2AoBIZCYCgEhkJgPPfPw6q5oGoXhSvvRe5/W+4QGAqBoRAYCoGhEBjP97ta45RhKhrprK3THWL77qR3DG+DQmAoBIZCYCgExleU1aGad5rqtLARiXW6knYiVbuS4lAIDIXAUAgMhcA4dCXd7tN+Zd/1aA2de4WdqNJc1m1QCAyFwFAIDIXAOFS/T/WemspldcapdjGdqgerz+sOgaEQGAqBoRAYCoGRfGFnKkqJ5urkl6ZO9LYr7XPzukNgKASGQmAoBIZCYCS7kk69M3hlt4TtiLEaxWW+E3NZOBQCQyEwFAJDITCa1e8b1ebVeSM6J4lT68zMay4LjUJgKASGQmAoBMahX9ZvVap/stFfqzrvRg7N6vfboBAYCoGhEBgKgfEVZW33ztq4t/hJ737fz8eZ6xrhDoGhEBgKgaEQGAqB8arXUE1FHdGYmbky69x4LahztzG3HncIDIXAUAgMhcBQCIxk7/epvNYn2x0bNvJdUyePnhjeBoXAUAgMhcBQCIzXXO1T5vOdE8PtF3Om5o3WkFubOwSGQmAoBIZCYCgExuHEcDuqiX6385lqDqozb6fDQ4w7BIZCYCgEhkJgKATGoV9WNaqZeiF6493Ajderd6JTdwgMhcBQCAyFwFAIjOQ7htWK7mo1+1QH0cwapurQOpX58TrdITAUAkMhMBQCQyEwktXvGTbqlzrzblTCd/JXubncITAUAkMhMBQCQyEwki/sZNjvJfX/n1ffPYzm7ax/qg+YOwSHQmAoBIZCYCgExuGO4VQtUzRmNX91ZRTU+UwvN+gOgaEQGAqBoRAYCoFxuGPYIZNTyuSROh0+t6Oyzp1K+2XdBoXAUAgMhcBQCIxD9XuVam+oqdqnTnV6ZpyIzovV8ZrdITAUAkMhMBQCQyEwBjs5VJm6xzcVfWXG2X/P0R0CQyEwFAJDITAUAmOw+j1D547eVDeJas5tqvtELnfnDoGhEBgKgaEQGAqBcXGUVe0xVa3M74wZ0XlNO4P9stAoBIZCYCgEhkJgHKKs7V7uU+8ndt5YrDLXFyv6bXcIDIXAUAgMhcBQCIyvKGvjvuFUj/eIaiQztYZO3ZevRd8GhcBQCAyFwFAIjOdGVyz5OX8DAAD//0uG7cmvII8pAAAAAElFTkSuQmCC">
+                    </section>
+                    <section>
                       <h2>What is Reverse Engineering?</h2>
                       <p>Taking a binary executable and figuring out what it does</p>
                     </section>
                     <section>
                       <h1>Why RE?</h1>
-                      <p><sub>(ordered from most to least legal)</sub></p>
+                      <p><sub>(ordered from least to most sketchy)</sub></p>
                       <ol>
-                        <li>Figure out what a virus is doing</li>
                         <li>Debug compiler output</li>
+                        <li>Figure out what a virus is doing</li>
                         <li>Mod a game not designed to be modded
                           (e.g. <a href="https://github.com/Col-E/Recaf">Minecraft</a>)</li>
                         <li>Exploit a program</li>
@@ -65,33 +72,128 @@
                     </section>
                     <section>
                       <section>
-                        <h2><b>The name of this talk is a lie</b></h2>
-                        <p>Before there was C or Algol, there was assembly</p>
+                      <h2>Memory Models</h2>
+                      <p>Stack, heap, and static memory</p>
+                      <img src="https://i.stack.imgur.com/HOY4C.png">
+                      </section>
+                      <section>
+                        <h3>How do compilers use the stack?</h3>
+                        <img src="img/stack.png">
+                      </section>
+                      <section>
+                        <h2>What is linking?</h2>
+                        <p>The standard library needs to be compiled in somehow</p>
+                        <p>A program called a 'linker' merges your code with the standard library</p>
+                        <img src="img/linker.jpg">
+                      </section>
+                      <section>
+                        <h2>What is dynamic linking?</h2>
+                        <p>Putting the standard library in every program is expensive. What if we could avoid that?</p>
+                        <img src="img/dynamic-linking.gif">
+                      </section>
+                    </section>
+                    <section>
+                      <section>
+                      <h2>What's an ABI?</h2>
+                      <p>Keeping the expected data format the same</p>
+                      <p>Like an API but for binaries</p>
+                      <a href="https://gankra.github.io/blah/swift-abi/#what-is-abi-stability-and-dynamic-linking">There's a much better writeup here</a>
+                      </section>
+                      <section>
+                        <h3>ABI Examples</h3>
+                        <p>IP Packets</p>
+                        <img src="img/ip-abi.jpg">
+                      </section>
+                      <section>
+                        <h3>ABI Examples</h3>
+                        <p>Linux Kernel</p>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Linux_kernel_interfaces.svg/640px-Linux_kernel_interfaces.svg.png">
+                      </section>
+                    </section>
+                    <section>
+                      <section>
+                        <h2>Assembly Crash Course</h2>
                         <p>Remember 212?</p>
                         <img src="https://i.stack.imgur.com/4I3jv.png">
                       </section>
                       <section>
                         <h3>Registers</h3>
-                        <img src="http://slideplayer.com/slide/4394450/14/images/13/Registers+Register+Description+EIP+%E2%80%93+Instruction+Pointer+*.jpg">
+                        <img src="img/registers.jpg">
                       </section>
                       <section>
-                        <h3>ABI</h3>
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Linux_kernel_interfaces.svg/1200px-Linux_kernel_interfaces.svg.png">
+                        <h3>CISC vs RISC</h3>
+                        <p>Complex Instruction Set Computer vs Reduced</p>
+                        <p>You may have heard of <a href="https://riscv.org/">RISC-V</a>. x86 is the exact opposite:</p>
+                        <ul>
+                          <li>Hundreds of instructions</li>
+                          <li>Variable length instructions</li>
+                          <li>Same mnemonic for different encodings</li>
+                          <li>Many addressing modes</li>
+                          <li>Backwards compatible over several decades</li>
+                        </ul>
                       </section>
+                    </section>
+                    <section>
                       <section>
-                        <h3>Memory Model</h3>
-                        <img src="https://i.stack.imgur.com/HOY4C.png">
+                        <h2>Common x86 Instructions</h2>
+                        <p><a href="https://www.felixcloutier.com/x86/">More instructions</a></p>
                       </section>
                       <section>
                         <h3>Common x86 Instructions</h3>
                         <ul>
-                          <li><code>mov/movq</code></li>
-                          <li><code>cmp</code> and <code>je</code></li>
-                          <li><code>xor</code></li>
-                          <li><code>push</code> and <code>pop</code></li>
-                          <li><code>call</code> and <code>ret</code></li>
-                          <li><code>lea</code></li>
-                          <li><code>nop</code></li>
+                          <li><code>mov/movq/movl</code> - move some data from {register,memory,immediate} to {register,memory}.
+                            <pre><code>movl $0,%edi  # move 0 into index register</code></pre>
+                          </li>
+                          <li><code>add</code> - add data to a register
+                            <pre><code>addl $8, %edi  # add 8 to the index register</code></pre>
+                          </li>
+                          <li><code>cmp</code> and <code>je</code> - Compare two values and jump if they're equal
+                            <pre><code>loop:
+ cmpl $10,%eax  # check if we hit the end
+ je exit
+ addl $1, %eax
+ jmp loop
+exit:
+ movl $1,%eax
+</code></pre></li>
+                        </ul>
+                      </section>
+                      <section>
+                        <h3>Common x86 Instructions</h3>
+                        <ul>
+                          <li><code>xor</code> - acts on two registers or register and immediate
+                            <pre><code>xor %eax, %eax  # fast way to set eax to 0</code></pre>
+                          </li>
+                          <li><code>push</code> and <code>pop</code> - store or load things onto the stack
+                            <pre><code>pushl %eax  # save the contents of eax
+mov $5, %eax  # do something with eax
+pop %eax  # restore eax to former glory</code></pre>
+                          </li>
+                        </ul>
+                      </section>
+                      <section>
+                        <ul>
+                        <h3>Common x86 Instructions</h3>
+                          <li><code>call</code> and <code>ret</code> - function instructions
+                          <pre><code>_start:
+ call power
+ mov %eax, %ebx  # return code
+ movl $1, %eax   # syscall number
+ syscall
+
+power:
+ movl 4(%esp), %ebx  # put first argument in %ebx
+ movl 8(%esp), %ecx  # put second argument in %ecx
+ movl $1,%eax  # result = 1
+ ret</code></pre></li>
+                        </ul>
+                      </section>
+                      <section>
+                        <h3>Common x86 Instructions</h3>
+                        <ul>
+                          <li><code>lea</code> - load effective address
+                          <pre><code>lea    0x4(%rsp),%rcx</code></pre></li>
+                          <li><code>nop</code> - no operation</li>
                         </ul>
                       </section>
                       <section>
@@ -551,6 +653,7 @@ pop %ebp</code></pre> at the start and end of functions?</p>
                                         { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
                                 ],
                                 margin: .05,
+                                minScale: 0.2,
                                 history: true
                         });
                 </script>
